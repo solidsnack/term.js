@@ -700,7 +700,8 @@ Terminal.prototype.open = function(parent) {
   }
 
   // Create our main terminal element.
-  this.element = this.document.createElement('div');
+  //this.element = this.document.createElement('div');
+  this.element = this.document.createElement('svg');
   this.element.className = 'terminal';
   this.element.style.outline = 'none';
   this.element.setAttribute('tabindex', 0);
@@ -710,7 +711,8 @@ Terminal.prototype.open = function(parent) {
   // Create the lines for our terminal.
   this.children = [];
   for (; i < this.rows; i++) {
-    div = this.document.createElement('div');
+    //div = this.document.createElement('div');
+    div = this.document.createElement('text');
     this.element.appendChild(div);
     this.children.push(div);
   }
@@ -2756,7 +2758,8 @@ Terminal.prototype.resize = function(x, y) {
         this.lines.push(this.blankLine());
       }
       if (this.children.length < y) {
-        line = this.document.createElement('div');
+        // line = this.document.createElement('div');
+        line = this.document.createElement('text');
         el.appendChild(line);
         this.children.push(line);
       }

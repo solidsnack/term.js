@@ -31,13 +31,12 @@
 */
 </style>
 <h1>term.js</h1>
-<script src="/socket.io/socket.io.js"></script>
-<script src="term.js"></script>
+<script src="../src/term.js"></script>
 <script>
 ;(function() {
   window.onload = function() {
-    var socket = io.connect();
-    socket.on('connect', function() {
+//  var socket = io.connect();
+//  socket.on('connect', function() {
       var term = new Terminal({
         cols: 80,
         rows: 24,
@@ -57,14 +56,14 @@
 
       term.write('\x1b[31mWelcome to term.js!\x1b[m\r\n');
 
-      socket.on('data', function(data) {
-        term.write(data);
-      });
+//    socket.on('data', function(data) {
+//      term.write(data);
+//    });
 
-      socket.on('disconnect', function() {
-        term.destroy();
-      });
-    });
+//    socket.on('disconnect', function() {
+//      term.destroy();
+//    });
+//  });
   };
 }).call(this);
 </script>
