@@ -640,11 +640,18 @@ Terminal.insertStyle = function(document, bg, fg) {
   style.innerHTML = ''
     + '.terminal {\n'
     + '  float: left;\n'
-    + '  border: ' + bg + ' solid 5px;\n'
     + '  font-family: "DejaVu Sans Mono", "Liberation Mono", monospace;\n'
     + '  font-size: 11px;\n'
     + '  color: ' + fg + ';\n'
     + '  background: ' + bg + ';\n'
+    + '  resize: both;\n'
+    + '  overflow: auto;\n'
+    + '  padding: 1em;\n'
+    + '}\n'
+    + '\n'
+    + '.terminal-pane {\n'
+    + '  -webkit-transform: scale(1.0);\n'
+    + '  -webkit-transform-origin: top left;\n'
     + '}\n'
     + '\n'
     + '.terminal-cursor {\n'
@@ -700,20 +707,23 @@ Terminal.prototype.open = function(parent) {
   }
 
   // Create our main terminal element.
-  //this.element = this.document.createElement('div');
-  this.element = this.document.createElement('svg');
+  this.element = this.document.createElement('div');
   this.element.className = 'terminal';
   this.element.style.outline = 'none';
   this.element.setAttribute('tabindex', 0);
   this.element.style.backgroundColor = this.colors[256];
   this.element.style.color = this.colors[257];
 
+  // Create an inner element to hold rows of text.
+  this.pane = this.document.createElement('div');
+  this.pane.className = 'terminal-pane';
+  this.element.appendChild(this.pane);
+
   // Create the lines for our terminal.
   this.children = [];
   for (; i < this.rows; i++) {
-    //div = this.document.createElement('div');
-    div = this.document.createElement('text');
-    this.element.appendChild(div);
+    div = this.document.createElement('div');
+    this.pane.appendChild(div);
     this.children.push(div);
   }
   this.parent.appendChild(this.element);
@@ -730,6 +740,27 @@ Terminal.prototype.open = function(parent) {
 
   // Start blinking the cursor.
   this.startBlink();
+
+  // Record size information for scaling during resize.
+  var h = window.getComputedStyle(this.element).height
+    , w = window.getComputedStyle(this.element).width;
+  this.element.setAttribute('data-original-inner-height', h);
+  this.element.setAttribute('data-original-inner-width', w);
+  this.pane.style.height = h;
+  this.pane.style.width  = w;
+
+  // This has to be triggered by hand at the console (there is no 'resize'
+  // event that is per element; it belongs to the window) but the underlying
+  // mechanism does work.
+  on(this.element, 'resize', function() {
+    var new_w = window.getComputedStyle(self.element).width
+      , old_w = self.element.getAttribute('data-original-inner-width');
+    // NB: parseInt skips string garbage at the end but this is probably bad
+    //     code by any standard.
+    var scale = parseInt(new_w) / parseInt(old_w);
+    self.pane.style
+        .setProperty('-webkit-transform' ,'scale('+scale.toString()+')');
+  });
 
   // Bind to DOM events related
   // to focus and paste behavior.
@@ -2758,8 +2789,7 @@ Terminal.prototype.resize = function(x, y) {
         this.lines.push(this.blankLine());
       }
       if (this.children.length < y) {
-        // line = this.document.createElement('div');
-        line = this.document.createElement('text');
+        line = this.document.createElement('div');
         el.appendChild(line);
         this.children.push(line);
       }
